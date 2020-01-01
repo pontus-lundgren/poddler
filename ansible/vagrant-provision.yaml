@@ -1,0 +1,67 @@
+- hosts: all
+  tasks:
+
+  - name: update required packages
+    become: true
+    block:
+    - name: update installed packages
+      dnf:
+        name: "*"
+        state: latest
+        update_cache: true
+      notify: reboot
+    - name: install additional packages
+      dnf:
+        name: 
+        - libguestfs-tools-c
+        - avahi
+        state: present
+      notify: reboot
+    - name: enable avahi
+      systemd:
+        name: avahi-daemon
+        enabled: true
+        state: started
+    always:
+    - meta: flush_handlers
+
+  - become: true
+    block:
+    - name: install podman
+      dnf:
+        name: podman
+        state: latest
+#      notify: restart podman
+    - user:
+        name: podman
+        generate_ssh_key: true
+        ssh_key_type: ed25519
+        password: ""
+    - authorized_key:
+        user: podman
+        key: https://github.com/pontus-lundgren.keys
+
+#    - name: enable podman
+#      systemd:
+#        name: podman
+#        enabled: true
+#    always:
+#    - meta: flush_handlers
+#    - name: start podman
+#      systemd:
+#        name: podman
+#        state: started
+
+  handlers:
+
+  - name: reboot
+    become: true
+    reboot:
+      test_command: |
+        systemctl is-system-running --wait
+
+#   - name: restart podman
+#     become: true
+#     systemd:
+#       name: podman
+#       state: restarted
