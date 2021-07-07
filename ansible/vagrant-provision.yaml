@@ -4,14 +4,28 @@
   - name: update required packages
     become: true
     block:
+    - name: Remove network timeout
+      ini_file:
+        path: /usr/lib/systemd/system/NetworkManager-wait-online.service
+        section: Service
+        option: ExecStart
+        value: /usr/bin/nm-online -s -q -t 120
+      notify: reboot
+    - name: disable proc-sys-fs-binfmt_misc.automount
+      systemd:
+        name: proc-sys-fs-binfmt_misc.automount
+        enabled: false
+        masked: true
+        state: stopped
+      notify: reboot
     - name: update installed packages
-      dnf:
+      yum:
         name: "*"
         state: latest
         update_cache: true
       notify: reboot
     - name: install additional packages
-      dnf:
+      yum:
         name: 
         - libguestfs-tools-c
         - avahi
@@ -28,7 +42,7 @@
   - become: true
     block:
     - name: install podman
-      dnf:
+      yum:
         name: podman
         state: latest
 #      notify: restart podman
@@ -39,7 +53,7 @@
         password: ""
     - authorized_key:
         user: podman
-        key: https://github.com/pontus-lundgren.keys
+        key: https://github.com/tunnel49.keys
 
 #    - name: enable podman
 #      systemd:
@@ -58,7 +72,7 @@
     become: true
     reboot:
       test_command: |
-        systemctl is-system-running --wait
+        systemctl is-system-running
 
 #   - name: restart podman
 #     become: true

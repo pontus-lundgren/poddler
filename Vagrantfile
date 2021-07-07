@@ -2,10 +2,8 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  # config.vm.box = "generic/fedora28"
-  config.vm.box = "f31-cloud-virtualbox"
-  config.vm.box_url = "https://ftp.acc.umu.se/mirror/fedora/linux/releases/31/Cloud/x86_64/images/Fedora-Cloud-Base-Vagrant-31-1.9.x86_64.vagrant-virtualbox.box"
-  config.ssh.insert_key = false
+  config.vm.box = "generic/centos7"
+  # config.ssh.insert_key = false
   # config.vm.box_check_update = false
 
   # Create a public network, which generally matched to bridged network.
@@ -17,8 +15,8 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/home/vagrant/devel", type: "sshfs"
 
-  Dir.mkdir('.dnf-cache') unless File.exists?('.dnf-cache')
-  config.vm.synced_folder ".dnf-cache", "/var/cache/dnf", type: "sshfs"
+#  Dir.mkdir('.yum-cache') unless File.exists?('.yum-cache')
+#  config.vm.synced_folder ".yum-cache", "/var/cache/yum", type: "sshfs", create: true, mount_options: ["nonempty"]
 
   config.vm.provision "ansible" do |ansible|
       ansible.playbook = "ansible/vagrant-provision.yaml"
@@ -33,7 +31,6 @@ Vagrant.configure("2") do |config|
 #         domain.graphics_type = "spice"
          domain.memory = 2048
 #         domain.video_type = "qxl"
- 
      end
   end
 end
